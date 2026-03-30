@@ -38,6 +38,12 @@ import EOMatches from "./pages/eo/EOMatches";
 import EOMatchDetail from "./pages/eo/EOMatchDetail";
 import EOStandings from "./pages/eo/EOStandings";
 
+import ParentLayout from "./components/layout/ParentLayout";
+import ParentDashboard from "./pages/parent/ParentDashboard";
+import ParentBills from "./pages/parent/ParentBills";
+import ParentProgress from "./pages/parent/ParentProgress";
+import ParentProfile from "./pages/parent/ParentProfile";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -90,6 +96,15 @@ const App = () => (
             <Route path="schedule" element={<CoachSchedule />} />
             <Route path="attendance/:sessionId" element={<CoachAttendance />} />
             <Route path="profile" element={<CoachProfile />} />
+          </Route>
+
+          {/* Parent Routes */}
+          <Route path="/parent" element={<ParentLayout />}>
+            <Route index element={<ParentDashboard />} />
+            <Route path="bills" element={<ParentBills />} />
+            <Route path="progress" element={<ParentProgress />} />
+            <Route path="progress/:id" element={<ParentProgress />} />
+            <Route path="profile" element={<ParentProfile />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

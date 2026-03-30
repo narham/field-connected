@@ -1,0 +1,106 @@
+openapi: 3.0.0
+info:
+  title: Field Connected - Parent Module API
+  description: API endpoints for parents to manage their children's progress and payments.
+  version: 1.0.0
+servers:
+  - url: https://api.fieldconnected.id/v1
+    description: Production Server
+paths:
+  /parents/me:
+    get:
+      summary: Get current parent profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Parent profile data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parent'
+
+  /parents/children:
+    get:
+      summary: List all children linked to parent
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of children
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Player'
+
+  /parents/bills:
+    get:
+      summary: List all bills for parent's children
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of bills
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Bill'
+
+  /parents/payments:
+    post:
+      summary: Upload payment proof
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                bill_id:
+                  type: string
+                  format: uuid
+                payment_method:
+                  type: string
+                  enum: [transfer, qris, e-wallet]
+                proof:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Payment record created
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Parent:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        nama: { type: string, minLength: 3, maxLength: 60 }
+        whatsapp: { type: string }
+        email: { type: string, format: email }
+    Player:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        nama: { type: string }
+        posisi: { type: string }
+        attendance_rate: { type: number }
+    Bill:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        periode: { type: string }
+        nominal: { type: number }
+        status: { type: string, enum: [unpaid, paid, overdue] }
+        due_date: { type: string, format: date }
