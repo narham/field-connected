@@ -93,43 +93,36 @@ serve(async (req) => {
       });
     }
 
-    // 3. Undang Coach via Supabase Auth
-    console.log("Inviting user:", email);
-    const { data: authData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-      data: { 
+    // 3. Buat akun Coach langsung via createUser (tanpa kirim email)
+    const tempPassword = crypto.randomUUID().slice(0, 12) + "A1!";
+    console.log("Creating user:", email);
+    const { data: authData, error: createError } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password: tempPassword,
+      email_confirm: true,
+      user_metadata: { 
         role: "coach",
         full_name: nama,
         ssb_id: adminUser.id
       },
-      redirectTo: `${req.headers.get("origin")}/login`
     });
 
-    if (inviteError) {
-      console.error("Supabase Auth Invite Error:", inviteError);
-      
-      // Handle Rate Limit Error
-      if ((inviteError as any).status === 429 || inviteError.message.includes("rate limit")) {
-        return new Response(JSON.stringify({ 
-          error: "Batas pengiriman email sistem terlampaui. Silakan coba lagi nanti atau hubungi Administrator untuk mengatur SMTP kustom." 
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 429,
-        });
-      }
+    if (createError) {
+      console.error("Supabase Auth Create Error:", createError);
 
-      if (inviteError.message.includes("User already registered")) {
+      if (createError.message.includes("already been registered") || createError.message.includes("already exists")) {
         return new Response(JSON.stringify({ error: `Email ${email} sudah terdaftar di sistem.` }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 400,
         });
       }
-      return new Response(JSON.stringify({ error: inviteError.message }), {
+      return new Response(JSON.stringify({ error: createError.message }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 400,
       });
     }
     const newCoachUserId = authData.user.id;
-    console.log("User invited successfully, ID:", newCoachUserId);
+    console.log("User created successfully, ID:", newCoachUserId);
 
     // 4. Panggil RPC untuk Pendaftaran Atomik di Database
     console.log("Calling RPC register_coach_atomic...");
