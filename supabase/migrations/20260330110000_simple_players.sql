@@ -4,13 +4,14 @@
 DROP TABLE IF EXISTS players CASCADE;
 
 CREATE TABLE players ( 
-   id uuid default uuid_generate_v4() primary key, 
+   id uuid default gen_random_uuid() primary key, 
    parent_id uuid references auth.users(id), 
    nama text not null, 
    tanggal_lahir date not null, 
    posisi text not null, 
    nik bytea not null, -- Untuk menyimpan data terenkripsi 
    nama_ibu_kandung bytea not null, -- Untuk menyimpan data terenkripsi 
+   current_team_id uuid references teams(id), -- Added for coach module compatibility
    status text default 'nonaktif', 
    verified boolean default false, 
    created_at timestamp with time zone default now() 

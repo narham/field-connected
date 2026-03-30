@@ -53,6 +53,7 @@ const coachSchema = z.object({
   lembaga_penerbit: z.string().min(3, "Lembaga minimal 3 karakter"),
   tgl_dikeluarkan: z.string().min(1, "Tanggal dikeluarkan wajib diisi"),
   tgl_kadaluarsa: z.string().min(1, "Tanggal kadaluarsa wajib diisi"),
+  dokumen_sertifikat: z.any().optional(),
 });
 
 type CoachFormValues = z.infer<typeof coachSchema>;
@@ -98,6 +99,7 @@ const SSBCoachManagement = () => {
       lembaga_penerbit: "",
       tgl_dikeluarkan: "",
       tgl_kadaluarsa: "",
+      dokumen_sertifikat: null,
     },
   });
 
@@ -147,52 +149,63 @@ const SSBCoachManagement = () => {
   const onSubmit = async (values: CoachFormValues) => {
     setLoading(true);
     try {
-      // 1. Register Auth User (di simulasi ini menggunakan Edge Function di masa depan)
-      // Untuk demo, kita asumsikan pendaftaran berhasil dan membuat profil coach
-      
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Sesi berakhir");
+      if (!session) {
+        toast.error("Sesi Anda telah berakhir. Silakan login kembali.");
+        navigate("/login");
+        return;
+      }
 
-      // 2. Insert ke tabel coaches
-      const { data: coachData, error: coachError } = await supabase
-        .from("coaches")
-        .insert({
-          nama: values.nama,
-          kontak: values.kontak,
-          spesialisasi: values.spesialisasi,
-          user_id: session.user.id, // Simulasi, aslinya user_id dari auth.signUp
-        })
-        .select()
-        .single();
+      console.log("Session present, invoking function with user:", session.user.id);
 
-      if (coachError) throw coachError;
+      let certificateUrl = null;
+      if (values.dokumen_sertifikat && values.dokumen_sertifikat.length > 0) {
+        const file = values.dokumen_sertifikat[0];
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `certificates/${fileName}`;
 
-      // 3. Insert ke tabel coach_licenses
-      const { error: licenseError } = await supabase
-        .from("coach_licenses")
-        .insert({
-          coach_id: coachData.id,
-          jenis_lisensi: values.jenis_lisensi,
-          nomor_sertifikat: values.nomor_sertifikat,
-          lembaga_penerbit: values.lembaga_penerbit,
-          tgl_dikeluarkan: values.tgl_dikeluarkan,
-          tgl_kadaluarsa: values.tgl_kadaluarsa,
-        });
+        const { error: uploadError } = await supabase.storage
+          .from('coach-documents')
+          .upload(filePath, file);
 
-      if (licenseError) throw licenseError;
+        if (uploadError) {
+          if (uploadError.message === "Bucket not found") {
+            throw new Error("Penyimpanan (Storage Bucket) 'coach-documents' belum dibuat di Supabase Dashboard.");
+          }
+          throw uploadError;
+        }
+        certificateUrl = filePath;
+      }
 
-      // 4. Link ke SSB
-      const { error: ssbCoachError } = await supabase
-        .from("ssb_coaches")
-        .insert({
-          ssb_id: session.user.id,
-          coach_id: coachData.id,
-          status: 'pending'
-        });
+      // Memanggil Edge Function untuk mengundang Coach & membuat profil
+      // Penting: Hapus field non-serializable (seperti FileList) dari payload
+      const { dokumen_sertifikat, ...cleanValues } = values;
+      
+      const { data, error: functionError } = await supabase.functions.invoke("invite-coach", {
+        body: { ...cleanValues, certificate_url: certificateUrl },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
 
-      if (ssbCoachError) throw ssbCoachError;
+      if (functionError) {
+        console.error("Function Invocation Error:", functionError);
+        // Coba ambil detail error dari response jika ada
+        if ((functionError as any).context) {
+          try {
+            const body = await (functionError as any).context.json();
+            throw new Error(body.error || body.message || "Gagal memproses pendaftaran");
+          } catch (e) {
+            throw functionError;
+          }
+        }
+        throw functionError;
+      }
+      
+      if (data?.error) throw new Error(data.message || data.error);
 
-      toast.success("Akun Pelatih berhasil didaftarkan. Email verifikasi dikirim.");
+      toast.success(data.message || "Akun Pelatih berhasil diundang.");
       setIsDialogOpen(false);
       form.reset();
       fetchCoaches();
@@ -321,6 +334,72 @@ const SSBCoachManagement = () => {
                           <FormLabel>No. Sertifikat</FormLabel>
                           <FormControl>
                             <Input placeholder="CERT-123" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 mt-4">
+                    <FormField
+                      control={form.control}
+                      name="lembaga_penerbit"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Lembaga Penerbit</FormLabel>
+                          <FormControl>
+                            <Input placeholder="PSSI / AFC / FIFA" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    <FormField
+                      control={form.control}
+                      name="tgl_dikeluarkan"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Tgl. Dikeluarkan</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="tgl_kadaluarsa"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Tgl. Kadaluarsa</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 mt-4">
+                    <FormField
+                      control={form.control}
+                      name="dokumen_sertifikat"
+                      render={({ field: { value, onChange, ...fieldProps } }) => (
+                        <FormItem>
+                          <FormLabel>Unggah Sertifikat (PDF/Image)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="file" 
+                              accept="application/pdf,image/*" 
+                              onChange={(e) => onChange(e.target.files)}
+                              {...fieldProps} 
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

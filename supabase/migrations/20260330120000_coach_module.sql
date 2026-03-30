@@ -1,10 +1,14 @@
 -- 1. Enum untuk Tipe Sesi Latihan & Lisensi
+DROP TYPE IF EXISTS training_session_type CASCADE;
+DROP TYPE IF EXISTS coach_license_type CASCADE;
+
 CREATE TYPE training_session_type AS ENUM ('teknik', 'taktik', 'fisik', 'uji coba');
 CREATE TYPE coach_license_type AS ENUM ('A', 'B', 'C', 'D');
 
 -- 2. Tabel Profil Pelatih
+DROP TABLE IF EXISTS coaches CASCADE;
 CREATE TABLE coaches (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES auth.users(id) NOT NULL UNIQUE,
     nama VARCHAR(100) NOT NULL,
     foto_url TEXT,
@@ -16,20 +20,23 @@ CREATE TABLE coaches (
 );
 
 -- 3. Tabel Lisensi Pelatih
+DROP TABLE IF EXISTS coach_licenses CASCADE;
 CREATE TABLE coach_licenses (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     coach_id UUID REFERENCES coaches(id) ON DELETE CASCADE,
     jenis_lisensi coach_license_type NOT NULL,
     nomor_sertifikat VARCHAR(50) UNIQUE NOT NULL,
     lembaga_penerbit VARCHAR(100) NOT NULL,
     tgl_dikeluarkan DATE NOT NULL,
     tgl_kadaluarsa DATE NOT NULL,
+    sertifikat_url TEXT, -- Added for document storage
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
 -- 4. Tabel Relasi Pelatih dan Tim (Age Categories)
+DROP TABLE IF EXISTS coach_teams CASCADE;
 CREATE TABLE coach_teams (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     coach_id UUID REFERENCES coaches(id) ON DELETE CASCADE,
     team_id UUID REFERENCES teams(id) ON DELETE CASCADE,
     kategori_usia VARCHAR(10) CHECK (kategori_usia IN ('U9', 'U13', 'U17', 'U21', 'Senior')),
@@ -39,6 +46,7 @@ CREATE TABLE coach_teams (
 );
 
 -- 5. Update Tabel training_sessions (Menambahkan Field Modul Pelatih)
+ALTER TABLE players ADD COLUMN IF NOT EXISTS current_team_id UUID REFERENCES teams(id);
 ALTER TABLE training_sessions ADD COLUMN IF NOT EXISTS coach_id UUID REFERENCES coaches(id);
 ALTER TABLE training_sessions ADD COLUMN IF NOT EXISTS tipe_sesi training_session_type DEFAULT 'teknik';
 ALTER TABLE training_sessions ADD COLUMN IF NOT EXISTS kapasitas_lapangan INT;

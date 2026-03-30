@@ -1,7 +1,8 @@
 -- 1. Penambahan Relasi SSB ke Coach
 -- Tabel ssb_coaches menghubungkan SSB (organisasi) dengan Pelatih (Coach)
+DROP TABLE IF EXISTS ssb_coaches CASCADE;
 CREATE TABLE ssb_coaches (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     ssb_id UUID REFERENCES auth.users(id) NOT NULL, -- Admin SSB yang mendaftarkan
     coach_id UUID REFERENCES coaches(id) ON DELETE CASCADE NOT NULL,
     status VARCHAR(20) DEFAULT 'pending', -- 'active', 'pending', 'inactive'
@@ -10,8 +11,9 @@ CREATE TABLE ssb_coaches (
 );
 
 -- 2. Audit Trail untuk Manajemen Akun Coach
+DROP TABLE IF EXISTS coach_account_logs CASCADE;
 CREATE TABLE coach_account_logs (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     admin_id UUID REFERENCES auth.users(id) NOT NULL,
     coach_id UUID REFERENCES coaches(id) ON DELETE CASCADE,
     action VARCHAR(50) NOT NULL, -- 'CREATE', 'UPDATE_STATUS', 'VERIFY_LICENSE'
