@@ -1,16 +1,10 @@
-import { CheckCircle2, XCircle, Clock, Shield } from "lucide-react";
+import { Link } from "react-router-dom";
+import { CheckCircle2, XCircle, Clock, Shield, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-
-const registrations = [
-  { id: 1, team: "SSB Garuda Muda U-12", competition: "Liga Grassroots Jakarta U-12", players: 15, validated: true, status: "approved" },
-  { id: 2, team: "SSB Rajawali U-12", competition: "Liga Grassroots Jakarta U-12", players: 14, validated: true, status: "approved" },
-  { id: 3, team: "SSB Elang Jaya U-14", competition: "Piala Garuda U-14", players: 18, validated: false, status: "pending" },
-  { id: 4, team: "SSB Bintang Timur U-14", competition: "Piala Garuda U-14", players: 16, validated: false, status: "pending" },
-  { id: 5, team: "SSB Mitra Bola U-10", competition: "Tournament Mini Soccer U-10", players: 12, validated: true, status: "approved" },
-];
+import { mockRegistrations } from "@/lib/mock-data";
 
 const statusConfig = {
   approved: { label: "Disetujui", icon: CheckCircle2, color: "text-primary" },
@@ -54,15 +48,16 @@ const EORegistrations = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {registrations.map((r) => {
-                const config = statusConfig[r.status as keyof typeof statusConfig];
+              {mockRegistrations.map((r) => {
+                const config = statusConfig[r.status];
+                const allValid = r.players.every((p) => p.ageValid);
                 return (
                   <TableRow key={r.id}>
-                    <TableCell className="font-medium">{r.team}</TableCell>
-                    <TableCell className="text-muted-foreground text-sm">{r.competition}</TableCell>
-                    <TableCell>{r.players}</TableCell>
+                    <TableCell className="font-medium">{r.teamName}</TableCell>
+                    <TableCell className="text-muted-foreground text-sm">{r.competitionName}</TableCell>
+                    <TableCell>{r.players.length}</TableCell>
                     <TableCell>
-                      {r.validated ? (
+                      {allValid ? (
                         <Badge variant="default" className="text-[10px]">Valid</Badge>
                       ) : (
                         <Badge variant="secondary" className="text-[10px]">Belum</Badge>
@@ -75,12 +70,11 @@ const EORegistrations = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {r.status === "pending" && (
-                        <div className="flex gap-1">
-                          <Button size="sm" variant="default" className="h-7 text-xs">Setujui</Button>
-                          <Button size="sm" variant="outline" className="h-7 text-xs">Tolak</Button>
-                        </div>
-                      )}
+                      <Link to={`/eo/registrations/${r.id}`}>
+                        <Button size="sm" variant="outline" className="h-7 text-xs gap-1">
+                          Detail <ChevronRight className="w-3 h-3" />
+                        </Button>
+                      </Link>
                     </TableCell>
                   </TableRow>
                 );

@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
-import { UserCog, Users, Trophy, Settings, LogOut, ChevronRight } from "lucide-react";
+import { UserCog, Users, Trophy, Settings, LogOut, ChevronRight, ClipboardList } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 const menuItems = [
+  { to: "/ssb/competitions", icon: Trophy, label: "Kompetisi", desc: "Cari & ikuti kompetisi yang tersedia" },
+  { to: "/ssb/registrations", icon: ClipboardList, label: "Pendaftaran Saya", desc: "Status pendaftaran tim" },
   { to: "/ssb/coaches", icon: UserCog, label: "Manajemen Pelatih", desc: "Kelola data dan jadwal pelatih" },
   { to: "/ssb/teams", icon: Users, label: "Tim & Kelompok Umur", desc: "Atur pembagian tim" },
-  { to: "/ssb/competitions", icon: Trophy, label: "Kompetisi", desc: "Ikuti kompetisi yang tersedia" },
   { to: "/ssb/settings", icon: Settings, label: "Pengaturan", desc: "Profil klub dan akun" },
 ];
 
