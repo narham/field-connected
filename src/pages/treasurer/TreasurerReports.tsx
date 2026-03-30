@@ -15,14 +15,16 @@ import {
   Table as TableIcon,
   Loader2,
   ArrowUpRight,
-  ArrowDownRight,
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  Legend
+  ArrowDownRight
 } from "lucide-react";
+import { 
+  PieChart, 
+  Pie, 
+  Cell, 
+  ResponsiveContainer, 
+  Tooltip, 
+  Legend 
+} from "recharts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -171,7 +173,7 @@ const TreasurerReports = () => {
             </div>
             <div className="space-y-2">
               <div className="flex justify-between text-[10px]">
-                <span>Terlambat > 60 Hari</span>
+                <span>Terlambat {'>'} 60 Hari</span>
                 <span className="font-bold">Rp 5.000.000</span>
               </div>
               <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
