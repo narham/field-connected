@@ -12,15 +12,22 @@ import NotFound from "./pages/NotFound";
 import SSBLayout from "./components/layout/SSBLayout";
 import SSBDashboard from "./pages/ssb/SSBDashboard";
 import SSBPlayers from "./pages/ssb/SSBPlayers";
+import SSBPlayerDetail from "./pages/ssb/SSBPlayerDetail";
 import SSBTraining from "./pages/ssb/SSBTraining";
 import SSBPayments from "./pages/ssb/SSBPayments";
 import SSBMore from "./pages/ssb/SSBMore";
+import SSBCompetitions from "./pages/ssb/SSBCompetitions";
+import SSBCompetitionDetail from "./pages/ssb/SSBCompetitionDetail";
+import SSBCompetitionRegister from "./pages/ssb/SSBCompetitionRegister";
+import SSBRegistrations from "./pages/ssb/SSBRegistrations";
 
 import EOLayout from "./components/layout/EOLayout";
 import EODashboard from "./pages/eo/EODashboard";
 import EOCompetitions from "./pages/eo/EOCompetitions";
 import EORegistrations from "./pages/eo/EORegistrations";
+import EORegistrationDetail from "./pages/eo/EORegistrationDetail";
 import EOMatches from "./pages/eo/EOMatches";
+import EOMatchDetail from "./pages/eo/EOMatchDetail";
 import EOStandings from "./pages/eo/EOStandings";
 
 const queryClient = new QueryClient();
@@ -40,9 +47,14 @@ const App = () => (
           <Route path="/ssb" element={<SSBLayout />}>
             <Route index element={<SSBDashboard />} />
             <Route path="players" element={<SSBPlayers />} />
+            <Route path="players/:id" element={<SSBPlayerDetail />} />
             <Route path="training" element={<SSBTraining />} />
             <Route path="payments" element={<SSBPayments />} />
             <Route path="more" element={<SSBMore />} />
+            <Route path="competitions" element={<SSBCompetitions />} />
+            <Route path="competitions/:id" element={<SSBCompetitionDetail />} />
+            <Route path="competitions/:id/register" element={<SSBCompetitionRegister />} />
+            <Route path="registrations" element={<SSBRegistrations />} />
           </Route>
 
           {/* EO Routes */}
@@ -50,7 +62,9 @@ const App = () => (
             <Route index element={<EODashboard />} />
             <Route path="competitions" element={<EOCompetitions />} />
             <Route path="registrations" element={<EORegistrations />} />
+            <Route path="registrations/:id" element={<EORegistrationDetail />} />
             <Route path="matches" element={<EOMatches />} />
+            <Route path="matches/:id" element={<EOMatchDetail />} />
             <Route path="standings" element={<EOStandings />} />
           </Route>
 

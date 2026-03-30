@@ -1,24 +1,20 @@
 import { useState } from "react";
-import { Search, Plus, Filter, ChevronRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Search, Plus, Filter, ChevronRight, CheckCircle2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { mockPlayers } from "@/lib/mock-data";
 
-const mockPlayers = [
-  { id: 1, name: "Ahmad Fauzi", age: 12, position: "Forward", group: "U-12", status: "active" },
-  { id: 2, name: "Budi Santoso", age: 10, position: "Midfielder", group: "U-10", status: "active" },
-  { id: 3, name: "Cahyo Prasetyo", age: 14, position: "Defender", group: "U-14", status: "active" },
-  { id: 4, name: "Dimas Ramadhan", age: 11, position: "Goalkeeper", group: "U-12", status: "inactive" },
-  { id: 5, name: "Eko Wijaya", age: 9, position: "Forward", group: "U-10", status: "active" },
-  { id: 6, name: "Farhan Hidayat", age: 13, position: "Midfielder", group: "U-14", status: "active" },
-];
+const CURRENT_CLUB_ID = "club-1";
 
 const SSBPlayers = () => {
   const [search, setSearch] = useState("");
 
-  const filtered = mockPlayers.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase())
+  const clubPlayers = mockPlayers.filter((p) => p.clubId === CURRENT_CLUB_ID);
+  const filtered = clubPlayers.filter((p) =>
+    p.fullName.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -47,25 +43,32 @@ const SSBPlayers = () => {
 
       <div className="space-y-2">
         {filtered.map((player) => (
-          <Card key={player.id} className="hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                <span className="text-primary font-bold text-sm">
-                  {player.name.split(" ").map((n) => n[0]).join("")}
-                </span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-foreground text-sm truncate">{player.name}</p>
-                <p className="text-muted-foreground text-xs">
-                  {player.position} · {player.group} · {player.age} tahun
-                </p>
-              </div>
-              <Badge variant={player.status === "active" ? "default" : "secondary"} className="text-[10px]">
-                {player.status === "active" ? "Aktif" : "Nonaktif"}
-              </Badge>
-              <ChevronRight className="w-4 h-4 text-muted-foreground" />
-            </CardContent>
-          </Card>
+          <Link key={player.id} to={`/ssb/players/${player.id}`}>
+            <Card className="hover:shadow-md transition-shadow cursor-pointer mb-2">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+                  <span className="text-primary font-bold text-sm">
+                    {player.fullName.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-medium text-foreground text-sm truncate">{player.fullName}</p>
+                    {player.verified && (
+                      <CheckCircle2 className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                    )}
+                  </div>
+                  <p className="text-muted-foreground text-xs">
+                    {player.position} · {player.group}
+                  </p>
+                </div>
+                <Badge variant={player.status === "active" ? "default" : "secondary"} className="text-[10px]">
+                  {player.status === "active" ? "Aktif" : "Nonaktif"}
+                </Badge>
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
     </div>
