@@ -36,6 +36,8 @@ const Login = () => {
           navigate("/ssb");
         } else if (role === "eo") {
           navigate("/eo");
+        } else if (role === "coach") {
+          navigate("/coach");
         } else {
           navigate("/");
         }

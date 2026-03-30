@@ -8,7 +8,7 @@ import { Mail, Lock, Eye, EyeOff, User, Building2, Users, Trophy, Loader2 } from
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
-type RoleType = "ssb" | "eo";
+type RoleType = "ssb" | "eo" | "coach";
 
 const Register = () => {
   const [searchParams] = useSearchParams();

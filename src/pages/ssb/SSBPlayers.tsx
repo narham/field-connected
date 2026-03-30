@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Search, Plus, Filter, ChevronRight, CheckCircle2, Loader2, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,22 @@ interface Player {
   created_at: string;
 }
 
+/**
+ * SSBPlayers Component
+ * 
+ * Modul Manajemen Pemain untuk Sekolah Sepak Bola (SSB).
+ * Memungkinkan pengelola SSB untuk:
+ * 1. Melihat daftar pemain yang terdaftar.
+ * 2. Mencari pemain berdasarkan nama.
+ * 3. Mendaftarkan pemain baru (dengan validasi NIK & Nama Ibu).
+ * 
+ * Logika Bisnis:
+ * - Data pemain disimpan di tabel 'players'.
+ * - NIK pemain bersifat unik untuk mencegah duplikasi global.
+ * - Pemain baru harus diverifikasi oleh EO sebelum berpartisipasi dalam kompetisi.
+ */
 const SSBPlayers = () => {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -91,11 +106,46 @@ const SSBPlayers = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.functions.invoke("create-player", {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Sesi berakhir, silakan login kembali.");
+        navigate("/login");
+        return;
+      }
+
+      console.log("Invoking 'create-player' with current session...");
+
+      const { data, error } = await supabase.functions.invoke("create-player", {
         body: formData,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Functions error object:", error);
+        
+        // Handle 401 Unauthorized (Invalid JWT)
+        if (error.status === 401) {
+          const errorBody = await error.context.json();
+          toast.error(`Sesi tidak valid: ${errorBody.message || "Invalid JWT"}. Silakan login kembali.`);
+          await supabase.auth.signOut();
+          navigate("/login");
+          return;
+        }
+
+        // Coba ambil pesan error dari response body jika ada
+        let errorMessage = "Gagal memproses data";
+        if (error.context) {
+          try {
+            const body = await error.context.json();
+            errorMessage = body.error || body.message || body.details || errorMessage;
+          } catch (e) {
+            console.error("Failed to parse error body", e);
+          }
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+        
+        throw new Error(errorMessage);
+      }
 
       toast.success("Pemain berhasil ditambahkan!");
       setIsDialogOpen(false);
@@ -108,6 +158,7 @@ const SSBPlayers = () => {
       });
       fetchPlayers(); // Refresh the list
     } catch (error: any) {
+      console.error("Submit error:", error);
       toast.error(error.message || "Gagal menambahkan pemain");
     } finally {
       setLoading(false);

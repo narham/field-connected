@@ -27,26 +27,54 @@ function encryptData(data: string): Uint8Array {
 
 
 serve(async (req) => {
-  // Handle preflight request untuk CORS
+  // 1. Handle Preflight OPTIONS
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: req.headers.get("Authorization")! } } }
-    );
+    const authHeader = req.headers.get("Authorization");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 
-    // Ambil data pengguna yang terotentikasi dari token JWT
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    console.log(`[Request] Auth header present: ${!!authHeader}`);
+
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized", message: "Missing Authorization header" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 401,
       });
     }
+
+    // Gunakan Anon Key untuk inisialisasi, tapi Authorization header untuk Auth context
+    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    // Verifikasi User menggunakan token dari header secara eksplisit
+    const token = authHeader.replace("Bearer ", "");
+    
+    // Debug: Cek apakah token dikirim
+    console.log(`[Auth] Checking token (prefix): ${token.substring(0, 15)}...`);
+
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+    
+    if (authError || !user) {
+      console.error("[Auth Error] getUser failed:", authError);
+      return new Response(JSON.stringify({ 
+        error: "Unauthorized", 
+        message: authError?.message || "Invalid JWT or User not found",
+        debug: {
+          tokenLength: token.length,
+          url: supabaseUrl.substring(0, 25) + "..."
+        }
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+
+    console.log(`[Success] User verified: ${user.id}`);
 
     const playerData = await req.json();
 

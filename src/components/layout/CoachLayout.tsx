@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import EOSidebar from "./EOSidebar";
+import CoachBottomNav from "./CoachBottomNav";
 import { supabase } from "@/lib/supabase";
 import { Loader2 } from "lucide-react";
 
-const EOLayout = () => {
+const CoachLayout = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
 
@@ -15,7 +15,7 @@ const EOLayout = () => {
         navigate("/login");
       } else {
         const role = session.user.user_metadata.role;
-        if (role !== "eo") {
+        if (role !== "coach") {
           navigate("/login");
         }
       }
@@ -34,13 +34,11 @@ const EOLayout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <EOSidebar />
-      <main className="md:ml-64 p-4 md:p-8">
-        <Outlet />
-      </main>
+    <div className="min-h-screen bg-background pb-20">
+      <Outlet />
+      <CoachBottomNav />
     </div>
   );
 };
 
-export default EOLayout;
+export default CoachLayout;

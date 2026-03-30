@@ -16,6 +16,7 @@ import SSBPlayerDetail from "./pages/ssb/SSBPlayerDetail";
 import SSBTraining from "./pages/ssb/SSBTraining";
 import SSBPayments from "./pages/ssb/SSBPayments";
 import SSBMore from "./pages/ssb/SSBMore";
+import SSBCoachManagement from "./pages/ssb/SSBCoachManagement";
 import SSBCompetitions from "./pages/ssb/SSBCompetitions";
 import SSBCompetitionDetail from "./pages/ssb/SSBCompetitionDetail";
 import SSBCompetitionRegister from "./pages/ssb/SSBCompetitionRegister";
@@ -23,6 +24,12 @@ import SSBRegistrations from "./pages/ssb/SSBRegistrations";
 import SSBAttendance from "./pages/ssb/SSBAttendance";
 
 import EOLayout from "./components/layout/EOLayout";
+import CoachLayout from "./components/layout/CoachLayout";
+import CoachDashboard from "./pages/coach/CoachDashboard";
+import CoachRoster from "./pages/coach/CoachRoster";
+import CoachProfile from "./pages/coach/CoachProfile";
+import CoachSchedule from "./pages/coach/CoachSchedule";
+import CoachAttendance from "./pages/coach/CoachAttendance";
 import EODashboard from "./pages/eo/EODashboard";
 import EOCompetitions from "./pages/eo/EOCompetitions";
 import EORegistrations from "./pages/eo/EORegistrations";
@@ -58,6 +65,7 @@ const App = () => (
             <Route path="training/attendance/:sessionId" element={<SSBAttendance />} />
             <Route path="payments" element={<SSBPayments />} />
             <Route path="more" element={<SSBMore />} />
+            <Route path="coaches" element={<SSBCoachManagement />} />
             <Route path="competitions" element={<SSBCompetitions />} />
             <Route path="competitions/:id" element={<SSBCompetitionDetail />} />
             <Route path="competitions/:id/register" element={<SSBCompetitionRegister />} />
@@ -73,6 +81,15 @@ const App = () => (
             <Route path="matches" element={<EOMatches />} />
             <Route path="matches/:id" element={<EOMatchDetail />} />
             <Route path="standings" element={<EOStandings />} />
+          </Route>
+
+          {/* Coach Routes */}
+          <Route path="/coach" element={<CoachLayout />}>
+            <Route index element={<CoachDashboard />} />
+            <Route path="roster" element={<CoachRoster />} />
+            <Route path="schedule" element={<CoachSchedule />} />
+            <Route path="attendance/:sessionId" element={<CoachAttendance />} />
+            <Route path="profile" element={<CoachProfile />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

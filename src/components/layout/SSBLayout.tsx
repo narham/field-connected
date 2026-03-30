@@ -4,6 +4,19 @@ import SSBBottomNav from "./SSBBottomNav";
 import { supabase } from "@/lib/supabase";
 import { Loader2 } from "lucide-react";
 
+/**
+ * SSBLayout Component
+ * 
+ * Layout utama untuk peran Sekolah Sepak Bola (SSB).
+ * Komponen ini bertindak sebagai 'auth guard' yang memeriksa:
+ * 1. Apakah pengguna sudah masuk (session ada).
+ * 2. Apakah pengguna memiliki peran 'ssb'.
+ * 
+ * Fitur:
+ * - Pemeriksaan sesi autentikasi otomatis.
+ * - Navigasi bawah (BottomNav) khusus untuk SSB.
+ * - Loading state saat proses verifikasi.
+ */
 const SSBLayout = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
