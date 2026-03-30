@@ -44,6 +44,22 @@ import ParentBills from "./pages/parent/ParentBills";
 import ParentProgress from "./pages/parent/ParentProgress";
 import ParentProfile from "./pages/parent/ParentProfile";
 
+import TreasurerLayout from "./components/layout/TreasurerLayout";
+import TreasurerDashboard from "./pages/treasurer/TreasurerDashboard";
+import TreasurerInvoices from "./pages/treasurer/TreasurerInvoices";
+import TreasurerPayments from "./pages/treasurer/TreasurerPayments";
+import TreasurerReports from "./pages/treasurer/TreasurerReports";
+import TreasurerSettings from "./pages/treasurer/TreasurerSettings";
+
+import OwnerLayout from "./components/layout/OwnerLayout";
+import OwnerDashboard from "./pages/owner/OwnerDashboard";
+import OwnerAdminManagement from "./pages/owner/OwnerAdminManagement";
+import OwnerApprovals from "./pages/owner/OwnerApprovals";
+import OwnerPolicies from "./pages/owner/OwnerPolicies";
+import OwnerSettings from "./pages/owner/OwnerSettings";
+import OwnerStructure from "./pages/owner/OwnerStructure";
+import OwnerMembers from "./pages/owner/OwnerMembers";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -105,6 +121,26 @@ const App = () => (
             <Route path="progress" element={<ParentProgress />} />
             <Route path="progress/:id" element={<ParentProgress />} />
             <Route path="profile" element={<ParentProfile />} />
+          </Route>
+
+          {/* Treasurer Routes */}
+          <Route path="/treasurer" element={<TreasurerLayout />}>
+            <Route index element={<TreasurerDashboard />} />
+            <Route path="invoices" element={<TreasurerInvoices />} />
+            <Route path="payments" element={<TreasurerPayments />} />
+            <Route path="reports" element={<TreasurerReports />} />
+            <Route path="settings" element={<TreasurerSettings />} />
+          </Route>
+
+          {/* Owner Routes */}
+          <Route path="/owner" element={<OwnerLayout />}>
+            <Route index element={<OwnerDashboard />} />
+            <Route path="admins" element={<OwnerAdminManagement />} />
+            <Route path="approvals" element={<OwnerApprovals />} />
+            <Route path="policies" element={<OwnerPolicies />} />
+            <Route path="settings" element={<OwnerSettings />} />
+            <Route path="structure" element={<OwnerStructure />} />
+            <Route path="members" element={<OwnerMembers />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
