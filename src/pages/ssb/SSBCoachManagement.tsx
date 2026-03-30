@@ -12,7 +12,9 @@ import {
   Mail, 
   Phone, 
   FileText,
-  UserPlus
+  UserPlus,
+  Copy,
+  CheckCircle2
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -86,6 +88,7 @@ const SSBCoachManagement = () => {
   const [isFetching, setIsFetching] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [coaches, setCoaches] = useState<CoachListItem[]>([]);
+  const [successData, setSuccessData] = useState<{ email: string; password: string } | null>(null);
 
   const form = useForm<CoachFormValues>({
     resolver: zodResolver(coachSchema),
@@ -205,7 +208,7 @@ const SSBCoachManagement = () => {
       
       if (data?.error) throw new Error(data.message || data.error);
 
-      toast.success(data.message || "Akun Pelatih berhasil diundang.");
+      setSuccessData({ email: values.email, password: data.temp_password });
       setIsDialogOpen(false);
       form.reset();
       fetchCoaches();
@@ -425,6 +428,46 @@ const SSBCoachManagement = () => {
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* Success Dialog - Show temp credentials */}
+      <Dialog open={!!successData} onOpenChange={(open) => !open && setSuccessData(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-primary">
+              <CheckCircle2 className="w-5 h-5" /> Coach Berhasil Didaftarkan
+            </DialogTitle>
+            <DialogDescription>
+              Bagikan kredensial berikut kepada coach untuk login pertama kali.
+            </DialogDescription>
+          </DialogHeader>
+          {successData && (
+            <div className="space-y-3 py-2">
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Email</Label>
+                <div className="flex items-center gap-2">
+                  <Input readOnly value={successData.email} className="text-sm font-mono bg-muted" />
+                  <Button size="icon" variant="outline" onClick={() => { navigator.clipboard.writeText(successData.email); toast.success("Email disalin"); }}>
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Password Sementara</Label>
+                <div className="flex items-center gap-2">
+                  <Input readOnly value={successData.password} className="text-sm font-mono bg-muted" />
+                  <Button size="icon" variant="outline" onClick={() => { navigator.clipboard.writeText(successData.password); toast.success("Password disalin"); }}>
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+              <p className="text-xs text-destructive font-medium">⚠️ Password ini hanya ditampilkan sekali. Pastikan Anda menyalinnya sekarang.</p>
+            </div>
+          )}
+          <DialogFooter>
+            <Button className="w-full" onClick={() => setSuccessData(null)}>Tutup</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="flex gap-2 mb-4">
         <div className="relative flex-1">
