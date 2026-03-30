@@ -1,25 +1,54 @@
 import { useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Lock, Eye, EyeOff, User, Building2 } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, User, Building2, Users, Trophy, Loader2 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 type RoleType = "ssb" | "eo";
 
 const Register = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<RoleType>((searchParams.get("role") as RoleType) || "ssb");
   const [name, setName] = useState("");
   const [orgName, setOrgName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Supabase auth
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name,
+            organization_name: orgName,
+            role: role,
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        toast.success("Registrasi berhasil! Silakan cek email Anda untuk verifikasi.");
+        navigate("/login");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Terjadi kesalahan saat registrasi");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -143,7 +172,16 @@ const Register = () => {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full">Buat Akun</Button>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Memproses...
+                  </>
+                ) : (
+                  "Buat Akun"
+                )}
+              </Button>
 
               <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">
@@ -177,8 +215,5 @@ const Register = () => {
     </div>
   );
 };
-
-// Need to import these icons used in JSX
-import { Users, Trophy } from "lucide-react";
 
 export default Register;

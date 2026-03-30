@@ -1,20 +1,68 @@
+import { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Shield, Trophy, Calendar, User, Phone, CheckCircle2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, Shield, Trophy, Calendar, User, Phone, CheckCircle2, Loader2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { getPlayer, getPlayerHistory } from "@/lib/mock-data";
+import { getPlayerHistory } from "@/lib/mock-data";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
+
+interface Player {
+  id: string;
+  nama: string;
+  posisi: string;
+  status: string;
+  verified: boolean;
+  tanggal_lahir: string;
+  created_at: string;
+}
 
 const SSBPlayerDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const player = getPlayer(id || "");
+  const [player, setPlayer] = useState<Player | null>(null);
+  const [loading, setLoading] = useState(true);
   const history = getPlayerHistory(id || "");
+
+  const fetchPlayer = useCallback(async () => {
+    if (!id) return;
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("players")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (error) throw error;
+      setPlayer(data);
+    } catch (error: any) {
+      console.error("Error fetching player:", error);
+      toast.error("Gagal mengambil data pemain");
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    fetchPlayer();
+  }, [fetchPlayer]);
+
+  if (loading) {
+    return (
+      <div className="max-w-lg mx-auto px-4 pt-20 text-center">
+        <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
+        <p className="text-muted-foreground">Memuat data pemain...</p>
+      </div>
+    );
+  }
 
   if (!player) {
     return (
       <div className="max-w-lg mx-auto px-4 pt-6 text-center">
         <p className="text-muted-foreground">Pemain tidak ditemukan</p>
+        <Link to="/ssb/players" className="text-primary text-sm mt-4 inline-block">Kembali ke daftar pemain</Link>
       </div>
     );
   }
@@ -25,7 +73,7 @@ const SSBPlayerDetail = () => {
   const totalAssists = history.reduce((s, h) => s + h.assists, 0);
   const totalYellow = history.reduce((s, h) => s + h.yellowCards, 0);
 
-  const age = Math.floor((Date.now() - new Date(player.birthDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+  const age = Math.floor((Date.now() - new Date(player.tanggal_lahir).getTime()) / (365.25 * 24 * 60 * 60 * 1000));
 
   return (
     <div className="max-w-lg mx-auto px-4 pt-6 pb-24">
@@ -38,20 +86,20 @@ const SSBPlayerDetail = () => {
       <div className="flex items-center gap-4 mb-6">
         <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center">
           <span className="text-primary font-bold text-xl">
-            {player.fullName.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+            {player.nama.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
           </span>
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-lg font-bold text-foreground">{player.fullName}</h1>
+            <h1 className="text-lg font-bold text-foreground">{player.nama}</h1>
             {player.verified && (
               <Badge variant="default" className="text-[9px] gap-0.5 px-1.5 py-0">
                 <CheckCircle2 className="w-2.5 h-2.5" /> Global ID
               </Badge>
             )}
           </div>
-          <p className="text-muted-foreground text-sm">{player.position} · {player.group} · {age} tahun</p>
-          <p className="text-muted-foreground text-xs">{player.clubName}</p>
+          <p className="text-muted-foreground text-sm">{player.posisi} · {age} tahun</p>
+          <p className="text-muted-foreground text-xs">Aktif di SSB</p>
         </div>
       </div>
 
@@ -85,7 +133,7 @@ const SSBPlayerDetail = () => {
                 <User className="w-4 h-4 text-muted-foreground" />
                 <div>
                   <p className="text-[10px] text-muted-foreground">Nama Lengkap</p>
-                  <p className="text-sm text-foreground">{player.fullName}</p>
+                  <p className="text-sm text-foreground">{player.nama}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -93,29 +141,29 @@ const SSBPlayerDetail = () => {
                 <div>
                   <p className="text-[10px] text-muted-foreground">Tanggal Lahir</p>
                   <p className="text-sm text-foreground">
-                    {new Date(player.birthDate).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })} ({age} tahun)
+                    {new Date(player.tanggal_lahir).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })} ({age} tahun)
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Shield className="w-4 h-4 text-muted-foreground" />
                 <div>
-                  <p className="text-[10px] text-muted-foreground">Global ID</p>
-                  <p className="text-sm text-foreground font-mono">{player.globalId}</p>
+                  <p className="text-[10px] text-muted-foreground">Player ID</p>
+                  <p className="text-sm text-foreground font-mono">{player.id.slice(0, 8).toUpperCase()}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Trophy className="w-4 h-4 text-muted-foreground" />
                 <div>
                   <p className="text-[10px] text-muted-foreground">Posisi</p>
-                  <p className="text-sm text-foreground">{player.position}</p>
+                  <p className="text-sm text-foreground">{player.posisi}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-muted-foreground" />
                 <div>
-                  <p className="text-[10px] text-muted-foreground">Orang Tua</p>
-                  <p className="text-sm text-foreground">{player.parentName} · {player.parentPhone}</p>
+                  <p className="text-[10px] text-muted-foreground">Status</p>
+                  <p className="text-sm text-foreground">{player.status === 'active' ? 'Aktif' : 'Nonaktif'}</p>
                 </div>
               </div>
             </CardContent>

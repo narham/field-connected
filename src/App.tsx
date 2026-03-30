@@ -20,6 +20,7 @@ import SSBCompetitions from "./pages/ssb/SSBCompetitions";
 import SSBCompetitionDetail from "./pages/ssb/SSBCompetitionDetail";
 import SSBCompetitionRegister from "./pages/ssb/SSBCompetitionRegister";
 import SSBRegistrations from "./pages/ssb/SSBRegistrations";
+import SSBAttendance from "./pages/ssb/SSBAttendance";
 
 import EOLayout from "./components/layout/EOLayout";
 import EODashboard from "./pages/eo/EODashboard";
@@ -37,7 +38,12 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
@@ -49,6 +55,7 @@ const App = () => (
             <Route path="players" element={<SSBPlayers />} />
             <Route path="players/:id" element={<SSBPlayerDetail />} />
             <Route path="training" element={<SSBTraining />} />
+            <Route path="training/attendance/:sessionId" element={<SSBAttendance />} />
             <Route path="payments" element={<SSBPayments />} />
             <Route path="more" element={<SSBMore />} />
             <Route path="competitions" element={<SSBCompetitions />} />

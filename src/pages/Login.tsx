@@ -1,19 +1,50 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Supabase auth
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        toast.success("Berhasil masuk!");
+        
+        // Cek role user untuk redirect ke dashboard yang sesuai
+        const role = data.user.user_metadata.role;
+        if (role === "ssb") {
+          navigate("/ssb");
+        } else if (role === "eo") {
+          navigate("/eo");
+        } else {
+          navigate("/");
+        }
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Email atau password salah");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -74,7 +105,16 @@ const Login = () => {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full">Masuk</Button>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Memproses...
+                  </>
+                ) : (
+                  "Masuk"
+                )}
+              </Button>
 
               <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">

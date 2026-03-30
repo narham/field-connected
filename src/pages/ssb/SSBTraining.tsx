@@ -1,4 +1,5 @@
 import { Calendar, Clock, MapPin, Users, CheckCircle2 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -47,9 +48,11 @@ const SSBTraining = () => {
                     <CheckCircle2 className="w-4 h-4 text-primary" />
                   )}
                 </div>
-                <Button variant="ghost" size="sm" className="text-xs h-7">
-                  {s.status === "done" ? "Lihat Absen" : "Absensi"}
-                </Button>
+                <Link to={`/ssb/training/attendance/${s.id}`}>
+                  <Button variant="ghost" size="sm" className="text-xs h-7">
+                    {s.status === "done" ? "Lihat Absen" : "Absensi"}
+                  </Button>
+                </Link>
               </div>
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-sm text-foreground">
