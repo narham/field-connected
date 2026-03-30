@@ -8,7 +8,8 @@ import {
   ArrowRight, 
   Loader2,
   Award,
-  Activity
+  Activity,
+  MapPin
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

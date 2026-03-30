@@ -1,4 +1,10 @@
 
+[functions.invite-coach]
+enabled = true
+verify_jwt = false
+import_map = "./functions/invite-coach/deno.json"
+entrypoint = "./functions/invite-coach/index.ts"
+
 [functions.create-player]
 enabled = true
 verify_jwt = false
