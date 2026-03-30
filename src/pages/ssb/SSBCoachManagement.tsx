@@ -206,7 +206,7 @@ const SSBCoachManagement = () => {
       
       if (data?.error) throw new Error(data.message || data.error);
 
-      toast.success(data.message || "Akun Pelatih berhasil diundang.");
+      setSuccessData({ email: values.email, password: data.temp_password });
       setIsDialogOpen(false);
       form.reset();
       fetchCoaches();
