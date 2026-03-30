@@ -86,6 +86,7 @@ const SSBCoachManagement = () => {
   const [isFetching, setIsFetching] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [coaches, setCoaches] = useState<CoachListItem[]>([]);
+  const [successData, setSuccessData] = useState<{ email: string; password: string } | null>(null);
 
   const form = useForm<CoachFormValues>({
     resolver: zodResolver(coachSchema),

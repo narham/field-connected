@@ -76,7 +76,7 @@ const ParentProgress = () => {
           .eq("parent_id", parent.id);
 
         if (relations && relations.length > 0) {
-          const childList = relations.map(r => r.players);
+          const childList = relations.map((r: any) => r.players);
           setChildren(childList);
           if (!selectedChildId) {
             setSelectedChildId(childList[0].id);

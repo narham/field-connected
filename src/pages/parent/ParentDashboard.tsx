@@ -96,7 +96,7 @@ const ParentDashboard = () => {
           return acc;
         }, {} as Record<string, number>);
 
-        const childrenList = relations.map(r => ({
+        const childrenList = relations.map((r: any) => ({
           id: r.players.id,
           nama: r.players.nama,
           posisi: r.players.posisi,
