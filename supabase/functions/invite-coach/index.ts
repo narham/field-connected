@@ -154,8 +154,9 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: "Coach berhasil diundang. Email verifikasi telah dikirim.",
-        coach_id: coachId 
+        message: `Coach berhasil didaftarkan. Password sementara: ${tempPassword}`,
+        coach_id: coachId,
+        temp_password: tempPassword
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
