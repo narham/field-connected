@@ -90,6 +90,32 @@ const SSBCoachManagement = () => {
   const [coaches, setCoaches] = useState<CoachListItem[]>([]);
   const [successData, setSuccessData] = useState<{ email: string; password: string } | null>(null);
 
+  const copyToClipboard = async (text: string, label: string) => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        toast.success(`${label} disalin`);
+      } else {
+        // Fallback for non-secure contexts (HTTP)
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+          document.execCommand('copy');
+          toast.success(`${label} disalin`);
+        } catch (err) {
+          console.error('Fallback copy failed', err);
+          toast.error(`Gagal menyalin ${label}`);
+        }
+        document.body.removeChild(textArea);
+      }
+    } catch (err) {
+      console.error('Copy failed', err);
+      toast.error(`Gagal menyalin ${label}`);
+    }
+  };
+
   const form = useForm<CoachFormValues>({
     resolver: zodResolver(coachSchema),
     defaultValues: {
@@ -446,7 +472,7 @@ const SSBCoachManagement = () => {
                 <Label className="text-xs text-muted-foreground">Email</Label>
                 <div className="flex items-center gap-2">
                   <Input readOnly value={successData.email} className="text-sm font-mono bg-muted" />
-                  <Button size="icon" variant="outline" onClick={() => { navigator.clipboard.writeText(successData.email); toast.success("Email disalin"); }}>
+                  <Button size="icon" variant="outline" onClick={() => copyToClipboard(successData.email, "Email")}>
                     <Copy className="w-4 h-4" />
                   </Button>
                 </div>
@@ -455,7 +481,7 @@ const SSBCoachManagement = () => {
                 <Label className="text-xs text-muted-foreground">Password Sementara</Label>
                 <div className="flex items-center gap-2">
                   <Input readOnly value={successData.password} className="text-sm font-mono bg-muted" />
-                  <Button size="icon" variant="outline" onClick={() => { navigator.clipboard.writeText(successData.password); toast.success("Password disalin"); }}>
+                  <Button size="icon" variant="outline" onClick={() => copyToClipboard(successData.password, "Password")}>
                     <Copy className="w-4 h-4" />
                   </Button>
                 </div>
